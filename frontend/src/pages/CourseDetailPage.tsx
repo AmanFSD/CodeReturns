@@ -1,24 +1,17 @@
 import React from 'react';
-import { Box, Typography, Paper, Button } from '@mui/material';
+import { Box, Container } from '@mui/material';
+import CourseVideoSection from '../components/CourseVideoSection';
+import CourseContentDetails from '../components/CourseContentDetails';
+import CourseReviews from '../components/CourseReviews';
 
-const CourseDetailPage: React.FC = () => {
-  return (
-    <Box sx={{ p: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Python Master Class
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Learn the Python programming language by building unique
-          projects, exploring data science, and mastering web development.
-        </Typography>
-        <Button variant="contained" color="primary" sx={{ mb: 3 }}>
-          Enroll
-        </Button>
-        {/* Student Reviews, Course Modules, etc. */}
-      </Paper>
-    </Box>
-  );
-};
+const CourseDetailPage: React.FC = () => (
+  <Box sx={{ width: '100%', overflowY: 'auto' }}>
+    <Container maxWidth="xl">
+      <CourseVideoSection />
+      <CourseContentDetails />
+      <CourseReviews />
+    </Container>
+  </Box>
+);
 
 export default CourseDetailPage;

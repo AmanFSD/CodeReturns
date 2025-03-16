@@ -1,31 +1,36 @@
+// src/pages/LoginPage.tsx
 import React from 'react';
-import { Box, Typography, TextField, Button, Paper, Link } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Box, Container, TextField, Button, Typography, Paper, Link as MuiLink } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   return (
-    <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
-      <Paper sx={{ p: 4, width: '400px' }} elevation={3}>
-        <Typography variant="h4" mb={3}>
-          Login
-        </Typography>
-        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField label="Email" type="email" required />
-          <TextField label="Password" type="password" required />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-            <Button variant="contained" color="primary">Login</Button>
-            <Link component={RouterLink} to="/forgot-password" underline="hover">
+    <Container maxWidth="md" sx={{ my: 5, flexGrow: 1 }}>
+      <Paper elevation={5} sx={{ display: 'flex', overflow: 'hidden', height: '550px' }}>
+        <Box
+          component="img"
+          sx={{ width: '50%', objectFit: 'cover' }}
+          src="/src/assets/images/login.png"
+          alt="Login"
+        />
+        <Box sx={{ width: '50%', p: 5 }}>
+          <Typography variant="h4" gutterBottom>Login</Typography>
+          <TextField fullWidth label="Email" variant="standard" margin="normal" />
+          <TextField fullWidth label="Password" type="password" variant="standard" margin="normal" />
+          <Button variant="contained" sx={{ bgcolor: '#3F3069', mt: 3, width: '100%' }}>Login</Button>
+
+          <MuiLink component={Link} to="/register" underline="none">
+            <Button variant="contained" sx={{ bgcolor: '#3F3069', mt: 2, width: '100%' }}>Sign Up</Button>
+          </MuiLink>
+
+          <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
+            <MuiLink component={Link} to="/forgot-password" underline="hover" sx={{ cursor: 'pointer' }}>
               Forgot Password?
-            </Link>
-          </Box>
-          <Box sx={{ mt: 2, textAlign: 'right' }}>
-            <Link component={RouterLink} to="/register" underline="hover">
-              Need an account? Sign Up
-            </Link>
-          </Box>
+            </MuiLink>
+          </Typography>
         </Box>
       </Paper>
-    </Box>
+    </Container>
   );
 };
 
