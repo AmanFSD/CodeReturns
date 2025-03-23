@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'interviews',
     'subscriptions',
     'rest_framework',
-    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -132,6 +131,17 @@ STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+AUTH_USER_MODEL = 'users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+# 👇 Add this
+AUTHTOKEN_TOKEN_MODEL = 'users.CustomToken'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

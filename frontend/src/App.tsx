@@ -13,6 +13,7 @@ import CourseDetailPage from "./pages/CourseDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import ExercisesPage from "./pages/ExercisesPage";
 import InstructorSignUpPage from "./pages/InstructorSignUpPage";
+import LogoutPage from "./pages/LogoutPage";
 
 const App: React.FC = () => {
   return (
@@ -31,8 +32,9 @@ const App: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/instructor-signup" element={<InstructorSignUpPage />} />
-          <Route path="/courses/:id" element={<CourseDetailPage />} />
-        </Routes>
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
+                  </Routes>
       </div>
       <Footer />
     </div>

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures backend starts only after DB is ready
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgresql://aduser:kaz123@db:5432/kazcode
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: aduser
+      POSTGRES_PASSWORD: kaz123
+      POSTGRES_DB: kazcode
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:  # This ensures the DB is ready before backend starts
+      test: ["CMD", "pg_isready", "-U", "aduser", "-d", "kazcode"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
+volumes:
+  postgres_data:
