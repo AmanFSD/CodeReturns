@@ -1,18 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress } from "@mui/material";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { Box, Typography, Grid, CircularProgress } from "@mui/material";
 import axios from "axios";
+import CourseCard from "../components/CourseCard";
+import { useAuth } from "../context/AuthContext";
 
 const CoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  const { isAuthenticated } = useAuth();
+
+  const fetchEnrolledCourses = useCallback(() => {
+    if (!isAuthenticated) return;
+    const token = localStorage.getItem("token");
+
+    axios
+      .get("http://localhost:8000/api/enrolled-courses/", {
+        headers: { Authorization: `Token ${token}` },
+      })
+      .then((res) => {
+        const ids = res.data.map((c: any) => c.id);
+        setEnrolledCourseIds(ids);
+      })
+      .catch((err) => console.error("Error fetching enrolled courses:", err));
+  }, [isAuthenticated]);
 
   useEffect(() => {
     axios
       .get("http://localhost:8000/api/courses/")
       .then((response) => {
-        console.log("Fetched Courses:", response.data);
         setCourses(response.data);
         setLoading(false);
       })
@@ -21,7 +38,9 @@ const CoursesPage: React.FC = () => {
         setError("Failed to load courses.");
         setLoading(false);
       });
-  }, []);
+
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses]);
 
   if (loading) return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -35,26 +54,13 @@ const CoursesPage: React.FC = () => {
       <Grid container spacing={4} justifyContent="center">
         {courses.map((course) => (
           <Grid item xs={12} sm={12} md={6} lg={6} key={course.id}>
-            <Card sx={{ boxShadow: 3, width: "80%", mx: "auto" }}>
-              <CardMedia
-                component="img"
-                image={course.image ? `http://localhost:8000${course.image}` : "/default-course.png"}
-                alt={course.title}
-                sx={{ height: 220, objectFit: "contain" }}
-              />
-              <CardContent sx={{ textAlign: "center" }}>
-                <Typography variant="h6">{course.title}</Typography>
-                <Typography variant="body2">{course.description}</Typography>
-                <Button 
-  component={Link} 
-  to={`/courses/${course.id}`} 
-  variant="contained" 
-  sx={{ mt: 1 }}
->
-  View Course
-</Button>
-              </CardContent>
-            </Card>
+            <CourseCard
+              image={`http://localhost:8000${course.image}`}
+              title={course.title}
+              courseId={course.id}
+              isEnrolled={enrolledCourseIds.includes(course.id)}
+              refreshCourses={fetchEnrolledCourses}
+            />
           </Grid>
         ))}
       </Grid>

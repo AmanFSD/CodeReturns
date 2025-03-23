@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-t3=2t6iw!(t_n1kx*-r@l%(ch)@3ciqn#jl9h*k&f73eqqv$4n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
 
 
 # Application definition
@@ -134,6 +135,13 @@ STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'users.User'
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',

@@ -19,8 +19,8 @@ const Navbar: React.FC = () => {
   };
 
   const handleLogoutClick = () => {
-    logout();                // Clear token
-    navigate("/login");      // Redirect to login
+    logout();                
+    navigate("/login");     
   };
 
   const menuItems = [

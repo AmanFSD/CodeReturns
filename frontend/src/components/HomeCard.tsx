@@ -1,23 +1,38 @@
 import React from 'react';
 import { Card, Box, Typography, Button, CardMedia } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { useNavigate } from 'react-router-dom';
 
-const HomeCard: React.FC<HomeCardProps> = ({ title, buttonText, image, reversed = false, bgColor }) => {
-  const isMobile = useMediaQuery('(max-width:900px)'); // Detects if screen is mobile
+interface HomeCardProps {
+  title: string;
+  buttonText: string;
+  image: string;
+  reversed?: boolean;
+  bgColor?: string;
+  redirectTo?: string;
+}
+
+const HomeCard: React.FC<HomeCardProps> = ({ title, buttonText, image, reversed = false, bgColor, redirectTo = "/register" }) => {
+  const isMobile = useMediaQuery('(max-width:900px)');
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(redirectTo);
+  };
 
   return (
     <Card
       sx={{
         display: 'flex',
-        flexDirection: isMobile ? 'column' : reversed ? 'row-reverse' : 'row', // Stack vertically on mobile
+        flexDirection: isMobile ? 'column' : reversed ? 'row-reverse' : 'row',
         bgcolor: bgColor || '#fff',
         width: '90%',
         mx: 'auto',
         my: 3,
-        height: isMobile ? 'auto' : 750, // Auto height on mobile
+        height: isMobile ? 'auto' : 750,
       }}
     >
-      {/* Text Section - 30% on Desktop, Full Width on Mobile */}
+      {/* Text Section */}
       <Box
         sx={{
           flex: isMobile ? 'none' : '3',
@@ -33,12 +48,16 @@ const HomeCard: React.FC<HomeCardProps> = ({ title, buttonText, image, reversed 
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           {title}
         </Typography>
-        <Button variant="contained" sx={{ bgcolor: '#3F3069', width: '100px' }}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#3F3069', width: '100px' }}
+          onClick={handleClick}
+        >
           {buttonText}
         </Button>
       </Box>
 
-      {/* Image Section - 70% on Desktop, Full Width on Mobile */}
+      {/* Image Section */}
       <CardMedia
         component="img"
         sx={{
