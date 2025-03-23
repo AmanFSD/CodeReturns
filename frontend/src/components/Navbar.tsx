@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppBar, Toolbar, Box, IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -6,7 +6,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // ✅ Import Auth Context
+import { useAuth } from "../context/AuthContext";
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -18,12 +18,17 @@ const Navbar: React.FC = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleLogoutClick = () => {
+    logout();                // Clear token
+    navigate("/login");      // Redirect to login
+  };
+
   const menuItems = [
     { name: "Home", path: "/" },
     { name: "Learn", path: "/courses" },
     { name: "Interview Prep", path: "/interview-prep" },
     ...(isAuthenticated
-      ? [{ name: "Logout", path: "/login", onClick: logout }]
+      ? [{ name: "Logout", path: "/logout", onClick: handleLogoutClick }]
       : [
           { name: "Login", path: "/login" },
           { name: "Sign Up", path: "/register" },
@@ -33,10 +38,12 @@ const Navbar: React.FC = () => {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#355E92' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        {/* Logo */}
         <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
           <Box component="img" src="/src/assets/logo.png" sx={{ height: 60 }} />
         </Box>
 
+        {/* Desktop Links */}
         {!isMobile ? (
           <Box sx={{ display: 'flex', gap: 3 }}>
             {menuItems.map((item) => (
@@ -59,6 +66,7 @@ const Navbar: React.FC = () => {
           </IconButton>
         )}
 
+        {/* Socials */}
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton color="inherit"><InstagramIcon /></IconButton>
           <IconButton color="inherit"><FacebookIcon /></IconButton>
@@ -66,6 +74,7 @@ const Navbar: React.FC = () => {
         </Box>
       </Toolbar>
 
+      {/* Mobile Drawer */}
       <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}>
         <List sx={{ width: 250 }}>
           {menuItems.map((item) => (
