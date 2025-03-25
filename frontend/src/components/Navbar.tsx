@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Box, IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -28,7 +37,10 @@ const Navbar: React.FC = () => {
     { name: "Learn", path: "/courses" },
     { name: "Interview Prep", path: "/interview-prep" },
     ...(isAuthenticated
-      ? [{ name: "Logout", path: "/logout", onClick: handleLogoutClick }]
+      ? [
+          { name: "Profile", path: "/profile" }, // ✅ Add profile here
+          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
+        ]
       : [
           { name: "Login", path: "/login" },
           { name: "Sign Up", path: "/register" },
@@ -49,11 +61,17 @@ const Navbar: React.FC = () => {
             {menuItems.map((item) => (
               <span key={item.name}>
                 {item.onClick ? (
-                  <span style={{ cursor: 'pointer', color: 'white', fontSize: 16 }} onClick={item.onClick}>
+                  <span
+                    style={{ cursor: 'pointer', color: 'white', fontSize: 16 }}
+                    onClick={item.onClick}
+                  >
                     {item.name}
                   </span>
                 ) : (
-                  <Link to={item.path} style={{ textDecoration: 'none', color: 'white', fontSize: 16 }}>
+                  <Link
+                    to={item.path}
+                    style={{ textDecoration: 'none', color: 'white', fontSize: 16 }}
+                  >
                     {item.name}
                   </Link>
                 )}
@@ -66,7 +84,7 @@ const Navbar: React.FC = () => {
           </IconButton>
         )}
 
-        {/* Socials */}
+        {/* Social Icons */}
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton color="inherit"><InstagramIcon /></IconButton>
           <IconButton color="inherit"><FacebookIcon /></IconButton>

@@ -1,11 +1,43 @@
 from django.contrib.auth import authenticate, get_user_model
-from users.models import CustomToken as Token
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from users.models import CustomToken as Token,User
+
 from rest_framework import status
 
 
 User = get_user_model()
+
+
+
+
+# backend/users/views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from courses.models import UserCourse
+from courses.serializers import UserCourseSerializer
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    """Returns the profile data of the authenticated user."""
+    user = request.user
+
+    # Get enrolled and completed course titles
+    enrolled_courses = UserCourse.objects.filter(user=user)
+    completed_titles = [uc.course.title for uc in enrolled_courses if uc.status == "completed"]
+    enrolled_titles = [uc.course.title for uc in enrolled_courses]
+
+    data = {
+        "user": {
+            "name": user.name,
+            "email": user.email,
+        },
+        "completed_courses": completed_titles,
+        "enrolled_courses": enrolled_titles,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
 def register_user(request):
