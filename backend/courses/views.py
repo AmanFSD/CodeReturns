@@ -9,6 +9,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
+
 
 @csrf_exempt
 @api_view(["POST"])
@@ -27,6 +29,7 @@ def enroll_in_course(request, course_id):
         return Response({"error": str(e)}, status=400)
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def get_courses(request):
     """Fetch all courses."""
     courses = Course.objects.all()

@@ -23,22 +23,19 @@ def user_profile(request):
     """Returns the profile data of the authenticated user."""
     user = request.user
 
-    # Get enrolled and completed course titles
-    enrolled_courses = UserCourse.objects.filter(user=user)
-    completed_titles = [uc.course.title for uc in enrolled_courses if uc.status == "completed"]
-    enrolled_titles = [uc.course.title for uc in enrolled_courses]
+    # Fetch user data
+    completed_courses = list(user.enrollments.filter(status='completed').values_list('course__title', flat=True))
+    enrolled_courses = list(user.enrollments.values_list('course__title', flat=True))
 
-    data = {
+    return Response({
         "user": {
+            "id": str(user.id),
             "name": user.name,
             "email": user.email,
         },
-        "completed_courses": completed_titles,
-        "enrolled_courses": enrolled_titles,
-    }
-
-    return Response(data, status=status.HTTP_200_OK)
-
+        "completed_courses": completed_courses,
+        "enrolled_courses": enrolled_courses
+    })
 @api_view(["POST"])
 def register_user(request):
     """Handles user registration"""
