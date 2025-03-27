@@ -17,6 +17,8 @@ class CustomToken(Token):
         on_delete=models.CASCADE
     )
 
+    objects = models.Manager()  
+
     def save(self, *args, **kwargs):
         if not self.key:
             self.key = self.generate_key()
