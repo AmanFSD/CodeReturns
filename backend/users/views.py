@@ -2,9 +2,9 @@ from django.contrib.auth import authenticate, get_user_model
 from users.models import CustomToken as Token,User
 
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 
 
-User = get_user_model()
 
 
 
@@ -16,6 +16,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from courses.models import UserCourse
 from courses.serializers import UserCourseSerializer
+User = get_user_model()
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -36,7 +38,9 @@ def user_profile(request):
         "completed_courses": completed_courses,
         "enrolled_courses": enrolled_courses
     })
-@api_view(["POST"])
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register_user(request):
     """Handles user registration"""
     try:
@@ -61,7 +65,9 @@ def register_user(request):
         traceback.print_exc()
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(["POST"])
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def login_user(request):
     """Handles user login"""
     email = request.data.get("email")

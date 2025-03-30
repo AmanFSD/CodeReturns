@@ -10,23 +10,26 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from .models import UserCourse
+@method_decorator(csrf_exempt, name='dispatch') 
+class EnrollInCourseView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-
-@csrf_exempt
-@api_view(["POST"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def enroll_in_course(request, course_id):
-    user = request.user
-    try:
-        # Avoid duplicate enrollments
+    def post(self, request, course_id):
+        user = request.user
         if UserCourse.objects.filter(user=user, course_id=course_id).exists():
             return Response({"message": "Already enrolled."}, status=200)
 
         UserCourse.objects.create(user=user, course_id=course_id)
         return Response({"message": "Enrolled successfully."}, status=201)
-    except Exception as e:
-        return Response({"error": str(e)}, status=400)
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
