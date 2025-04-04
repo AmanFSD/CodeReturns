@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Grid, CircularProgress } from "@mui/material";
 import axios from "axios";
 import CourseCard from "../components/CourseCard";
@@ -11,35 +11,26 @@ const CoursesPage: React.FC = () => {
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const { isAuthenticated } = useAuth();
 
-  const fetchEnrolledCourses = useCallback(() => {
-    if (!isAuthenticated) return;
-
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    axios
-      .get("http://localhost:8000/api/courses/enrolled-courses/", {
-        headers: { Authorization: `Token ${token}` },
-      })
-      .then((res) => {
-        const ids = res.data.map((c: any) => c.id);
-        setEnrolledCourseIds(ids);
-      })
-      .catch((err) => console.error("Error fetching enrolled courses:", err));
-  }, [isAuthenticated]);
-
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const token = localStorage.getItem("token");
-    
+
+        const headers: any = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Token ${token}`;
+        }
+
         const res = await axios.get("http://localhost:8000/api/courses/", {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+          headers,
         });
-    
-        setCourses(res.data);
+
+        // Expecting response to have { courses: [], enrolled_ids: [] }
+        setCourses(res.data.courses || []);
+        setEnrolledCourseIds(res.data.enrolled_ids || []);
       } catch (err) {
         console.error("Error fetching courses:", err);
         setError("Failed to load courses.");
@@ -49,12 +40,18 @@ const CoursesPage: React.FC = () => {
     };
 
     fetchCourses();
-    fetchEnrolledCourses();
-  }, [fetchEnrolledCourses]);
+  }, []);
 
-  if (loading) return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
-  if (error) return <Typography color="error">{error}</Typography>;
-  if (courses.length === 0) return <Typography>No courses found.</Typography>;
+  if (loading)
+    return (
+      <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />
+    );
+
+  if (error)
+    return <Typography color="error">{error}</Typography>;
+
+  if (courses.length === 0)
+    return <Typography>No courses found.</Typography>;
 
   return (
     <Box sx={{ p: 4, minHeight: "100vh" }}>
@@ -62,19 +59,15 @@ const CoursesPage: React.FC = () => {
         Courses
       </Typography>
       <Grid container spacing={4} justifyContent="center">
-        {courses
-          .filter((course) => !enrolledCourseIds.includes(course.id)) 
-          .map((course) => (
-            <Grid item xs={12} sm={12} md={6} lg={6} key={course.id}>
-              <CourseCard
-                image={`http://localhost:8000${course.image}`}
-                title={course.title}
-                courseId={course.id}
-                isEnrolled={enrolledCourseIds.includes(course.id)}
-                refreshCourses={fetchEnrolledCourses}
-              />
-            </Grid>
-          ))}
+        {courses.map((course) => (
+          <Grid item xs={12} sm={6} md={4} key={course.id}>            <CourseCard
+              image={`http://localhost:8000${course.image}`}
+              title={course.title}
+              courseId={course.id}
+              isEnrolled={enrolledCourseIds.includes(course.id)}
+            />
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

@@ -38,14 +38,21 @@ class EnrollInCourseView(APIView):
     
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 @permission_classes([AllowAny])
 def get_courses(request):
-    """Fetch courses the user is NOT enrolled in."""
-    enrolled_course_ids = UserCourse.objects.filter(user=request.user).values_list("course_id", flat=True)
-    courses = Course.objects.exclude(id__in=enrolled_course_ids)
+    courses = Course.objects.all()
+
+    enrolled_course_ids = []
+
+    if request.user.is_authenticated:
+        enrolled_course_ids = UserCourse.objects.filter(user=request.user).values_list("course_id", flat=True)
+
     serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data)
+
+    return Response({
+        "courses": serializer.data,
+        "enrolled_ids": enrolled_course_ids,
+    })
 
 
 @api_view(["GET"])

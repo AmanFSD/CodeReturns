@@ -36,10 +36,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
     if (!isAuthenticated) {
       navigate("/login");
     } else {
-      navigate(`/courses/${courseId}`);
+      navigate(`/courses/${courseId}`); 
     }
   };
-
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -80,8 +79,17 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
   return (
     <Card sx={{ borderRadius: "8px", boxShadow: 3 }}>
-      <CardMedia component="img" height="200" image={image} alt={title} />
-      <CardContent sx={{ textAlign: "center" }}>
+<CardMedia
+  component="img"
+  image={image}
+  alt={title}
+  sx={{
+    height: 500,
+    objectFit: "cover",
+    borderTopLeftRadius: "8px",
+    borderTopRightRadius: "8px",
+  }}
+/>      <CardContent sx={{ textAlign: "center" }}>
         <Typography variant="h6" fontWeight="bold">
           {title}
         </Typography>
