@@ -27,7 +27,14 @@ class UserAdmin(admin.ModelAdmin):
             "classes": ("collapse",),
         }),
     )
+from .models import User, UserProfile
 
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'User Profile'
+
+admin.site.register(UserProfile)
 # @admin.register(UserProfile)
 # class UserProfileAdmin(admin.ModelAdmin):
 #     list_display = ("user", "phone_number", "linkedin_url")

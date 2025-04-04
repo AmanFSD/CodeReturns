@@ -1,75 +1,33 @@
 from django.contrib.auth import authenticate, get_user_model
-from users.models import CustomToken as Token,User
-
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-
-
-
-
-
-
-# backend/users/views.py
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from courses.models import UserCourse
-from courses.serializers import UserCourseSerializer
+
 User = get_user_model()
 
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_profile(request):
-    """Returns the profile data of the authenticated user."""
-    user = request.user
-
-    # Fetch user data
-    completed_courses = list(user.enrollments.filter(status='completed').values_list('course__title', flat=True))
-    enrolled_courses = list(user.enrollments.values_list('course__title', flat=True))
-
-    return Response({
-        "user": {
-            "id": str(user.id),
-            "name": user.name,
-            "email": user.email,
-        },
-        "completed_courses": completed_courses,
-        "enrolled_courses": enrolled_courses
-    })
-
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
-    """Handles user registration"""
-    try:
-        # Directly access data from request.data (parsed by DRF)
-        name = request.data.get("name")
-        email = request.data.get("email")
-        password = request.data.get("password")
+    name = request.data.get("name")
+    email = request.data.get("email")
+    password = request.data.get("password")
 
-        if not name or not email or not password:
-            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+    if not name or not email or not password:
+        return Response({"error": "Missing fields"}, status=400)
 
-        if User.objects.filter(email=email).exists():
-            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    if User.objects.filter(email=email).exists():
+        return Response({"error": "Email already registered"}, status=400)
 
-        user = User.objects.create_user(email=email, name=name, password=password)
-        token, _ = Token.objects.get_or_create(user=user)
+    user = User.objects.create_user(email=email, name=name, password=password)
+    token = Token.objects.create(user=user)
+    return Response({"token": token.key, "user_id": str(user.id)}, status=201)
 
-        return Response({"token": token.key, "user_id": str(user.id)}, status=status.HTTP_201_CREATED)
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def login_user(request):
-    """Handles user login"""
     email = request.data.get("email")
     password = request.data.get("password")
 
@@ -77,9 +35,25 @@ def login_user(request):
 
     if user:
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "user_id": str(user.id)}, status=status.HTTP_200_OK)
+        return Response({"token": token.key, "user_id": str(user.id)}, status=200)
 
-    return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"error": "Invalid credentials"}, status=401)
+
+from .serializers import UserSerializer
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    user = request.user
+    completed = list(user.enrollments.filter(status='completed').values_list('course__title', flat=True))
+    enrolled = list(user.enrollments.values_list('course__title', flat=True))
+    serialized_user = UserSerializer(user)
+
+    return Response({
+        "user": serialized_user.data,
+        "completed_courses": completed,
+        "enrolled_courses": enrolled
+    })
 
 
 @api_view(["POST"])

@@ -62,11 +62,11 @@ const ProfilePage: React.FC = () => {
           gap: 4,
         }}
       >
-        <Avatar
-          src="/src/assets/images/profile-avatar.png"
-          alt="Profile Picture"
-          sx={{ width: 120, height: 120 }}
-        />
+<Avatar
+  src={`http://localhost:8000${user?.profile?.profile_picture}`}
+  alt="Profile Picture"
+  sx={{ width: 120, height: 120 }}
+/>
         <Box>
           <Typography variant="h5" fontWeight="bold">{user?.name}</Typography>
           <Typography>Email: {user?.email}</Typography>

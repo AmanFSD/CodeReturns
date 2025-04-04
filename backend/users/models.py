@@ -2,31 +2,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 import uuid
 
-from django.conf import settings
-
-
-# other imports
-from rest_framework.authtoken.models import Token
-import binascii
-import os
-
-class CustomToken(Token):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        related_name='custom_auth_token',
-        on_delete=models.CASCADE
-    )
-
-    objects = models.Manager()  
-
-    def save(self, *args, **kwargs):
-        if not self.key:
-            self.key = self.generate_key()
-        return super().save(*args, **kwargs)
-
-    def generate_key(self):
-        return binascii.hexlify(os.urandom(20)).decode()
-
 ROLE_CHOICES = (
     ("student", "Student"),
     ("admin", "Admin"),
@@ -38,9 +13,6 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
-
-        # extra_fields.setdefault("username", "")
-
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -49,18 +21,13 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, name, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        # extra_fields.setdefault("username", "")
-
         return self.create_user(email=email, name=name, password=password, **extra_fields)
-
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    
-    username = None  
-
+    username = None
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="student")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -75,3 +42,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.name} ({self.role})"
+    
+class UserProfile(models.Model):
+    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.name}"

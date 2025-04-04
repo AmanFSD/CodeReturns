@@ -13,10 +13,12 @@ const CoursesPage: React.FC = () => {
 
   const fetchEnrolledCourses = useCallback(() => {
     if (!isAuthenticated) return;
+
     const token = localStorage.getItem("token");
+    if (!token) return;
 
     axios
-      .get("http://localhost:8000/api/enrolled-courses/", {
+      .get("http://localhost:8000/api/courses/enrolled-courses/", {
         headers: { Authorization: `Token ${token}` },
       })
       .then((res) => {
@@ -27,18 +29,26 @@ const CoursesPage: React.FC = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/courses/")
-      .then((response) => {
-        setCourses(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching courses:", error);
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+    
+        const res = await axios.get("http://localhost:8000/api/courses/", {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+    
+        setCourses(res.data);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
         setError("Failed to load courses.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
 
+    fetchCourses();
     fetchEnrolledCourses();
   }, [fetchEnrolledCourses]);
 
@@ -52,17 +62,19 @@ const CoursesPage: React.FC = () => {
         Courses
       </Typography>
       <Grid container spacing={4} justifyContent="center">
-        {courses.map((course) => (
-          <Grid item xs={12} sm={12} md={6} lg={6} key={course.id}>
-            <CourseCard
-              image={`http://localhost:8000${course.image}`}
-              title={course.title}
-              courseId={course.id}
-              isEnrolled={enrolledCourseIds.includes(course.id)}
-              refreshCourses={fetchEnrolledCourses}
-            />
-          </Grid>
-        ))}
+        {courses
+          .filter((course) => !enrolledCourseIds.includes(course.id)) 
+          .map((course) => (
+            <Grid item xs={12} sm={12} md={6} lg={6} key={course.id}>
+              <CourseCard
+                image={`http://localhost:8000${course.image}`}
+                title={course.title}
+                courseId={course.id}
+                isEnrolled={enrolledCourseIds.includes(course.id)}
+                refreshCourses={fetchEnrolledCourses}
+              />
+            </Grid>
+          ))}
       </Grid>
     </Box>
   );

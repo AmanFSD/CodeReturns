@@ -18,7 +18,13 @@ from rest_framework.authentication import TokenAuthentication
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserCourse
-@method_decorator(csrf_exempt, name='dispatch') 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework import status
+from .models import UserCourse
+
 class EnrollInCourseView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -27,17 +33,21 @@ class EnrollInCourseView(APIView):
         user = request.user
         if UserCourse.objects.filter(user=user, course_id=course_id).exists():
             return Response({"message": "Already enrolled."}, status=200)
-
         UserCourse.objects.create(user=user, course_id=course_id)
         return Response({"message": "Enrolled successfully."}, status=201)
+    
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 @permission_classes([AllowAny])
 def get_courses(request):
-    """Fetch all courses."""
-    courses = Course.objects.all()
+    """Fetch courses the user is NOT enrolled in."""
+    enrolled_course_ids = UserCourse.objects.filter(user=request.user).values_list("course_id", flat=True)
+    courses = Course.objects.exclude(id__in=enrolled_course_ids)
     serializer = CourseSerializer(courses, many=True)
     return Response(serializer.data)
+
+
 @api_view(["GET"])
 def get_course_detail(request, course_id):
     """Fetch a specific course along with its modules."""

@@ -1,6 +1,13 @@
 // src/components/CourseCard.tsx
 import React, { useState } from "react";
-import { Card, CardMedia, CardContent, Typography, Button } from "@mui/material";
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -13,18 +20,23 @@ interface CourseCardProps {
   refreshCourses?: () => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ image, title, courseId, isEnrolled, refreshCourses }) => {
+const CourseCard: React.FC<CourseCardProps> = ({
+  image,
+  title,
+  courseId,
+  isEnrolled,
+  refreshCourses,
+}) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [enrolled, setEnrolled] = useState(isEnrolled); // local update after subscribing
 
   const handleLearn = () => {
     if (!isAuthenticated) {
       navigate("/login");
-    } else if (isEnrolled) {
-      navigate(`/courses/${courseId}`);
     } else {
-      alert("You are not enrolled in this course!");
+      navigate(`/courses/${courseId}`);
     }
   };
 
@@ -33,18 +45,34 @@ const CourseCard: React.FC<CourseCardProps> = ({ image, title, courseId, isEnrol
       navigate("/login");
       return;
     }
+
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
-      await axios.post(`http://localhost:8000/api/courses/${courseId}/enroll/`, {}, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-      refreshCourses?.();
-    } catch (err) {
-      alert("Failed to subscribe to the course.");
+
+      const response = await axios.post(
+        `http://localhost:8000/api/courses/${courseId}/enroll/`,
+        {},
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        alert("Successfully enrolled! Redirecting to course...");
+        setEnrolled(true); // update UI locally
+        refreshCourses?.(); // refresh list if needed
+        setTimeout(() => navigate(`/courses/${courseId}`), 1000); // redirect to course
+      }
+    } catch (error: any) {
+      console.error("Subscription error:", error);
+      alert(
+        error.response?.data?.message ||
+          "Failed to subscribe to the course."
+      );
     } finally {
       setLoading(false);
     }
@@ -54,14 +82,22 @@ const CourseCard: React.FC<CourseCardProps> = ({ image, title, courseId, isEnrol
     <Card sx={{ borderRadius: "8px", boxShadow: 3 }}>
       <CardMedia component="img" height="200" image={image} alt={title} />
       <CardContent sx={{ textAlign: "center" }}>
-        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        <Typography variant="h6" fontWeight="bold">
+          {title}
+        </Typography>
         <Button
           variant="contained"
           sx={{ backgroundColor: "#283593", mt: 2, color: "white" }}
-          onClick={isEnrolled ? handleLearn : handleSubscribe}
+          onClick={enrolled ? handleLearn : handleSubscribe}
           disabled={loading}
         >
-          {isEnrolled ? "LEARN" : "SUBSCRIBE"}
+          {loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : enrolled ? (
+            "LEARN"
+          ) : (
+            "SUBSCRIBE"
+          )}
         </Button>
       </CardContent>
     </Card>
