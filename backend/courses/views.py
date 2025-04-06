@@ -91,3 +91,48 @@ def get_enrolled_courses(request):
     enrollments = UserCourse.objects.filter(user=request.user)
     data = [{"id": uc.course.id} for uc in enrollments]
     return Response(data)
+
+
+# courses/views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Course, Review
+from users.models import User
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def submit_review(request, course_id):
+    """Submit a review for a course."""
+    user = request.user
+    rating = request.data.get("rating")
+    comment = request.data.get("comment")
+
+    if not rating:
+        return Response({"error": "Rating is required."}, status=400)
+
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found."}, status=404)
+
+    # Optional: prevent duplicate review
+    if Review.objects.filter(user=user, course=course).exists():
+        return Response({"error": "You already reviewed this course."}, status=400)
+
+    Review.objects.create(
+        user=user,
+        course=course,
+        rating=rating,
+        comment=comment or ""
+    )
+
+    # Optional: update course average rating
+    reviews = Review.objects.filter(course=course)
+    avg_rating = sum([float(r.rating) for r in reviews]) / len(reviews)
+    course.average_rating = round(avg_rating, 2)
+    course.ratings_count = reviews.count()
+    course.save()
+
+    return Response({"message": "Review submitted successfully!"}, status=201)
