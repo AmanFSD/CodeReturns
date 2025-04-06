@@ -1,9 +1,14 @@
+# users/views.py
+
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+
+from .models import UserProfile
+from .serializers import RegisterSerializer, UserSerializer
 from courses.models import UserCourse
 
 User = get_user_model()
@@ -11,19 +16,18 @@ User = get_user_model()
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register_user(request):
-    name = request.data.get("name")
-    email = request.data.get("email")
-    password = request.data.get("password")
-
-    if not name or not email or not password:
-        return Response({"error": "Missing fields"}, status=400)
-
-    if User.objects.filter(email=email).exists():
-        return Response({"error": "Email already registered"}, status=400)
-
-    user = User.objects.create_user(email=email, name=name, password=password)
-    token = Token.objects.create(user=user)
-    return Response({"token": token.key, "user_id": str(user.id)}, status=201)
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        # Create token
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "message": "User registered successfully.",
+            "token": token.key,
+            "user_id": str(user.id),
+            "role": user.role
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -35,11 +39,13 @@ def login_user(request):
 
     if user:
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "user_id": str(user.id)}, status=200)
+        return Response({
+            "token": token.key,
+            "user_id": str(user.id),
+            "role": user.role
+        }, status=200)
 
     return Response({"error": "Invalid credentials"}, status=401)
-
-from .serializers import UserSerializer
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -55,10 +61,9 @@ def user_profile(request):
         "enrolled_courses": enrolled
     })
 
-
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def reset_password(request):
-    """Reset password for a user using email and new password"""
     email = request.data.get("email")
     new_password = request.data.get("new_password")
 

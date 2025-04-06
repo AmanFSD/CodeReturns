@@ -15,6 +15,9 @@ import ExercisesPage from "./pages/ExercisesPage";
 import InstructorSignUpPage from "./pages/InstructorSignUpPage";
 import LogoutPage from "./pages/LogoutPage";
 import ChallengePage from "./pages/ChallengePage";
+import InstructorDashboard from "./pages/InstructorDashboard";
+import UploadCoursePage from "./pages/UploadCoursePage";
+import InstructorProfilePage from "./pages/InstructorProfilePage";
 
 const App: React.FC = () => {
   return (
@@ -34,8 +37,14 @@ const App: React.FC = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/instructor-signup" element={<InstructorSignUpPage />} />
+          <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
           <Route path="/courses/:courseId" element={<CourseDetailPage />} />
                     <Route path="/logout" element={<LogoutPage />} />
+                    <Route path="/instructor/profile" element={<InstructorProfilePage />} />
+                    <Route path="/instructor/upload" element={<UploadCoursePage />} />
+{/* <Route path="/instructor/my-courses" element={<MyCoursesPage />} />
+<Route path="/instructor/enrollments" element={<InstructorEnrollments />} />
+<Route path="/instructor/stats" element={<InstructorStats />} /> */}
                   </Routes>
       </div>
       <Footer />

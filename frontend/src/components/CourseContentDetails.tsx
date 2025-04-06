@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Paper, Rating } from "@mui/material";
 
 const CourseContentDetails: React.FC<{ course: any }> = ({ course }) => (
-  <Paper sx={{ my: 4, p: 3, height: "90vh", overflowY: "auto" }}>
+  <Paper sx={{ my: 4, p: 3, height: "50vh", overflowY: "auto" }}>
     <Typography variant="h5" fontWeight="bold">{course.title}</Typography>
 
     <Box sx={{ my: 2 }}>

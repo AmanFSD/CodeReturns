@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    create_course,
     get_courses,
     get_course_detail,
     get_user_reviews,
@@ -16,4 +17,6 @@ urlpatterns = [
     path("<uuid:course_id>/submit-review/", submit_review, name="submit_review"),
     path("<uuid:course_id>/enroll/", EnrollInCourseView.as_view(), name="enroll_course"),
     path("enrolled-courses/", get_enrolled_courses, name="get_enrolled_courses"),
+    path("create/", create_course, name="create_course"),
+
 ]

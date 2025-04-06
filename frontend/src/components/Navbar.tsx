@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -15,21 +15,41 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:900px)');
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [profilePath, setProfilePath] = useState("/profile"); // default
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      axios.get("http://localhost:8000/api/profile/", {
+        headers: { Authorization: `Token ${token}` }
+      })
+      .then((res) => {
+        const role = res.data.user.role;
+        if (role === "mentor") {
+          setProfilePath("/instructor/profile");
+        } else {
+          setProfilePath("/profile");
+        }
+      })
+      .catch(() => setProfilePath("/profile"));
+    }
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const handleLogoutClick = () => {
-    logout();                
-    navigate("/login");     
+    logout();
+    navigate("/login");
   };
 
   const menuItems = [
@@ -38,8 +58,11 @@ const Navbar: React.FC = () => {
     { name: "Interview Prep", path: "/interview-prep" },
     ...(isAuthenticated
       ? [
-          { name: "Profile", path: "/profile" }, // ✅ Add profile here
-          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
+        
+        {
+          name: "Profile",
+          path: localStorage.getItem("user_role") === "mentor" ? "/instructor/profile" : "/profile"
+        },          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
         ]
       : [
           { name: "Login", path: "/login" },
@@ -50,12 +73,10 @@ const Navbar: React.FC = () => {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#355E92' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        {/* Logo */}
         <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
           <Box component="img" src="/src/assets/logo.png" sx={{ height: 60 }} />
         </Box>
 
-        {/* Desktop Links */}
         {!isMobile ? (
           <Box sx={{ display: 'flex', gap: 3 }}>
             {menuItems.map((item) => (
@@ -84,7 +105,6 @@ const Navbar: React.FC = () => {
           </IconButton>
         )}
 
-        {/* Social Icons */}
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton color="inherit"><InstagramIcon /></IconButton>
           <IconButton color="inherit"><FacebookIcon /></IconButton>
@@ -92,7 +112,6 @@ const Navbar: React.FC = () => {
         </Box>
       </Toolbar>
 
-      {/* Mobile Drawer */}
       <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}>
         <List sx={{ width: 250 }}>
           {menuItems.map((item) => (

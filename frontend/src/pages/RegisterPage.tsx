@@ -7,7 +7,8 @@ import {
   Card,
   CardContent,
   CardMedia,
-  CircularProgress
+  CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -15,7 +16,12 @@ import axios from "axios";
 const API_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000";
 
 const RegisterPage: React.FC = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "student",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -24,16 +30,12 @@ const RegisterPage: React.FC = () => {
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      errors.name = "Name is required";
-    }
-
+    if (!formData.name.trim()) errors.name = "Name is required";
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Please enter a valid email";
+      errors.email = "Enter a valid email";
     }
-
     if (!formData.password) {
       errors.password = "Password is required";
     } else if (formData.password.length < 6) {
@@ -54,31 +56,22 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async () => {
     if (!validateForm()) return;
-
     setLoading(true);
     setError("");
 
-    console.log("📤 Sending to backend:", formData); // Debug log
-
     try {
       const response = await axios.post(`${API_URL}/api/register/`, formData, {
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" },
       });
 
       localStorage.setItem("token", response.data.token);
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error: any) {
-      console.error("❌ Error response:", error.response?.data || error.message);
-
-      if (error.response?.data?.error) {
-        setError(error.response.data.error);
-      } else if (error.response?.data?.email) {
-        setError(error.response.data.email[0]);
-      } else {
-        setError("Registration failed. Please try again later.");
-      }
+      console.error("Registration error:", error);
+      const res = error.response?.data;
+      if (res?.error) setError(res.error);
+      else if (res?.email) setError(res.email[0]);
+      else setError("Registration failed. Try again later.");
     } finally {
       setLoading(false);
     }
@@ -91,9 +84,8 @@ const RegisterPage: React.FC = () => {
           component="img"
           sx={{ width: { xs: "100%", md: "50%" }, height: "auto" }}
           image="/src/assets/images/laptop-hand.png"
-          alt="Register Image"
+          alt="Register"
         />
-
         <CardContent sx={{ width: { xs: "100%", md: "50%" }, p: 4 }}>
           <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
             Register
@@ -131,6 +123,18 @@ const RegisterPage: React.FC = () => {
               helperText={validationErrors.password}
             />
 
+            <TextField
+              select
+              name="role"
+              label="Role"
+              fullWidth
+              value={formData.role}
+              onChange={handleChange}
+            >
+              <MenuItem value="student">Student</MenuItem>
+              <MenuItem value="mentor">Instructor</MenuItem>
+            </TextField>
+
             <Button
               variant="contained"
               sx={{ bgcolor: "#3F3069" }}
@@ -140,6 +144,7 @@ const RegisterPage: React.FC = () => {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
             </Button>
+
             <Button component={Link} to="/login" variant="contained" sx={{ bgcolor: "#3F3069" }} fullWidth>
               Login
             </Button>
