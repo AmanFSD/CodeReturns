@@ -13,6 +13,9 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
+        role = extra_fields.get("role", "student")
+        if role == "mentor":
+            extra_fields["is_active"] = False  # Needs admin approval
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

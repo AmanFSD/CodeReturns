@@ -65,6 +65,9 @@ const RegisterPage: React.FC = () => {
       });
 
       localStorage.setItem("token", response.data.token);
+      if (response.data.user_role === "mentor") {
+        alert("Your instructor account is pending admin approval.");
+      }
       navigate("/login");
     } catch (error: any) {
       console.error("Registration error:", error);

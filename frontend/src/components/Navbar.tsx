@@ -23,7 +23,8 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery('(max-width:900px)');
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const [profilePath, setProfilePath] = useState("/profile"); // default
+  const [profilePath, setProfilePath] = useState("/profile");
+  const [dashboardPath, setDashboardPath] = useState("/dashboard");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -35,11 +36,16 @@ const Navbar: React.FC = () => {
         const role = res.data.user.role;
         if (role === "mentor") {
           setProfilePath("/instructor/profile");
+          setDashboardPath("/instructor-dashboard");
         } else {
           setProfilePath("/profile");
+          setDashboardPath("/dashboard");
         }
       })
-      .catch(() => setProfilePath("/profile"));
+      .catch(() => {
+        setProfilePath("/profile");
+        setDashboardPath("/dashboard");
+      });
     }
   }, []);
 
@@ -58,11 +64,9 @@ const Navbar: React.FC = () => {
     { name: "Interview Prep", path: "/interview-prep" },
     ...(isAuthenticated
       ? [
-        
-        {
-          name: "Profile",
-          path: localStorage.getItem("user_role") === "mentor" ? "/instructor/profile" : "/profile"
-        },          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
+          { name: "Dashboard", path: dashboardPath },
+          { name: "Profile", path: profilePath },
+          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
         ]
       : [
           { name: "Login", path: "/login" },

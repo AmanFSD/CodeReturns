@@ -38,6 +38,8 @@ def login_user(request):
     user = authenticate(email=email, password=password)
 
     if user:
+        if not user.is_active:
+            return Response({"error": "Your account is pending approval."}, status=403)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "token": token.key,
