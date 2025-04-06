@@ -24,29 +24,31 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
 from .models import UserCourse
+from .models import Course, Review
+from users.models import User
 
 class EnrollInCourseView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, course_id=None):
-        user = request.user
-        if not course_id:
-            course_id = request.data.get("course_id")
+    def post(self, request, course_id):
+        try:
+            course = Course.objects.get(id=course_id)
+            user = request.user
 
-        if not course_id:
-            return Response({"error": "Course ID is missing."}, status=400)
+            # Check if already enrolled
+            if UserCourse.objects.filter(user=user, course=course).exists():
+                return Response({"message": "Already enrolled"}, status=status.HTTP_200_OK)
 
-        if UserCourse.objects.filter(user=user, course_id=course_id).exists():
-            return Response({"message": "Already enrolled."}, status=200)
+            # Create UserCourse
+            UserCourse.objects.create(user=user, course=course)
 
-        UserCourse.objects.create(user=user, course_id=course_id)
+            course.enrolled_count = UserCourse.objects.filter(course=course).count()
+            course.save()
 
-        Course.objects.filter(id=course_id).update(enrolled_count=F('enrolled_count') + 1)
+            return Response({"message": "Successfully enrolled"}, status=status.HTTP_201_CREATED)
 
-        return Response({"message": "Enrolled successfully."}, status=201)
-    
-
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_courses(request):
@@ -93,13 +95,8 @@ def get_enrolled_courses(request):
     return Response(data)
 
 
-# courses/views.py
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Course, Review
-from users.models import User
+
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -128,7 +125,6 @@ def submit_review(request, course_id):
         comment=comment or ""
     )
 
-    # Optional: update course average rating
     reviews = Review.objects.filter(course=course)
     avg_rating = sum([float(r.rating) for r in reviews]) / len(reviews)
     course.average_rating = round(avg_rating, 2)

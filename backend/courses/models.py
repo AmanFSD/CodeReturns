@@ -40,6 +40,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     video_url = models.URLField(blank=True, null=True)
     content = models.TextField(blank=True)
+    duration = models.CharField(max_length=10, blank=True, null=True)  # e.g., "5:32"
     order_no = models.PositiveIntegerField()
 
     def __str__(self):
