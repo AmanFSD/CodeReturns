@@ -1,5 +1,5 @@
-from .models import Course, UserCourse
-from .serializers import CourseSerializer, UserCourseSerializer
+from .models import Course, Review, UserCourse
+from .serializers import CourseSerializer, ReviewSerializer, UserCourseSerializer
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -29,11 +29,21 @@ class EnrollInCourseView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, course_id):
+    def post(self, request, course_id=None):
         user = request.user
+        if not course_id:
+            course_id = request.data.get("course_id")
+
+        if not course_id:
+            return Response({"error": "Course ID is missing."}, status=400)
+
         if UserCourse.objects.filter(user=user, course_id=course_id).exists():
             return Response({"message": "Already enrolled."}, status=200)
+
         UserCourse.objects.create(user=user, course_id=course_id)
+
+        Course.objects.filter(id=course_id).update(enrolled_count=F('enrolled_count') + 1)
+
         return Response({"message": "Enrolled successfully."}, status=201)
     
 
@@ -65,11 +75,13 @@ def get_course_detail(request, course_id):
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
 
+
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def get_user_reviews(request, course_id):
     """Fetch user reviews for a specific course."""
-    user_courses = UserCourse.objects.filter(course__id=course_id)
-    serializer = UserCourseSerializer(user_courses, many=True)
+    reviews = Review.objects.filter(course_id=course_id)
+    serializer = ReviewSerializer(reviews, many=True)
     return Response(serializer.data)
 
 

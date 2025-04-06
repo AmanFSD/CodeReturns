@@ -1,35 +1,70 @@
-// src/pages/DashboardPage.tsx
 import React from 'react';
 import { Box, Container, Grid, Paper, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <Container maxWidth="md" sx={{ flexGrow: 1, my: 5 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <Paper elevation={5} sx={{ p: 3, height: 400, textAlign: 'center' }}>
-            <Typography variant="h5">LEARN</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-evenly', mt: 3 }}>
-              <img src="/src/assets/icons/java.png" alt="Java" style={{ width: 80 }} />
-              <img src="/src/assets/icons/python.png" alt="Python" style={{ width: 80 }} />
-              <img src="/src/assets/icons/js.png" alt="JavaScript" style={{ width: 80 }} />
-              <img src="/src/assets/icons/swift.png" alt="Swift" style={{ width: 80 }} />
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Grid container sx={{ flex: 1, height: '50vh' }}>
+        {/* LEARN CARD */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={4}
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              transition: '0.3s',
+              '&:hover': { transform: 'scale(1.02)', boxShadow: 6 },
+            }}
+            onClick={() => navigate('/learn')}
+          >
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              LEARN
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+              <img src="/src/assets/icons/java.png" alt="Java" style={{ width: 50 }} />
+              <img src="/src/assets/icons/python.png" alt="Python" style={{ width: 50 }} />
+              <img src="/src/assets/icons/js.png" alt="JS" style={{ width: 50 }} />
+              <img src="/src/assets/icons/swift.png" alt="Swift" style={{ width: 50 }} />
             </Box>
           </Paper>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper elevation={5} sx={{ p: 3, height: 400, textAlign: 'center' }}>
-            <Typography variant="h5">INTERVIEW PREP</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-evenly', mt: 3 }}>
-              <img src="/src/assets/icons/apple.png" alt="Apple" style={{ width: 80 }} />
-              <img src="/src/assets/icons/facebook.png" alt="Facebook" style={{ width: 80 }} />
-              <img src="/src/assets/icons/netflix.png" alt="Netflix" style={{ width: 80 }} />
-              <img src="/src/assets/icons/google.png" alt="Google" style={{ width: 80 }} />
+
+        {/* INTERVIEW PREP CARD */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={4}
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              transition: '0.3s',
+              '&:hover': { transform: 'scale(1.02)', boxShadow: 6 },
+            }}
+            onClick={() => navigate('/interview-prep')}
+          >
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              INTERVIEW PREP
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+              <img src="/src/assets/icons/apple.png" alt="Apple" style={{ width: 50 }} />
+              <img src="/src/assets/icons/facebook.png" alt="Facebook" style={{ width: 50 }} />
+              <img src="/src/assets/icons/netflix.png" alt="Netflix" style={{ width: 50 }} />
+              <img src="/src/assets/icons/google.png" alt="Google" style={{ width: 50 }} />
             </Box>
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,46 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Box, Container, CircularProgress, Typography } from "@mui/material";
+import { Box, Container, CircularProgress, Typography, Button } from "@mui/material";
 import CourseVideoSection from "../components/CourseVideoSection";
 import CourseContentDetails from "../components/CourseContentDetails";
 import CourseReviews from "../components/CourseReviews";
 
 const CourseDetailPage: React.FC = () => {
-  const { courseId } = useParams(); // Get course ID from URL
+  const { courseId } = useParams<{ courseId?: string }>();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  console.log("Extracted Course ID from URL:", courseId); // Debugging Line
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!courseId) {
-      console.error("Error: courseId is undefined!");
+      setError("Course ID is missing.");
+      setLoading(false);
       return;
     }
 
     axios
-      .get(`http://localhost:8000/api/courses/${courseId}/`) // Fetch course details
-      .then((response) => {
-        setCourse(response.data);
+      .get(`http://localhost:8000/api/courses/${courseId}/`)
+      .then((res) => {
+        setCourse(res.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Error fetching course:", error);
+      .catch((err) => {
+        console.error("Error:", err);
+        setError("Could not load course.");
         setLoading(false);
       });
   }, [courseId]);
 
-  if (!courseId) return <Typography>Error: Course ID is missing.</Typography>; // Prevent 404 calls
-  if (loading) return <CircularProgress />; // Show loader while fetching data
-  if (!course) return <Typography>Error loading course.</Typography>;
+  if (loading) return <CircularProgress sx={{ m: 4 }} />;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Box sx={{ width: "100%", overflowY: "auto" }}>
       <Container maxWidth="xl">
         <CourseVideoSection course={course} />
         <CourseContentDetails course={course} />
-        <CourseReviews courseId={courseId} />
+        <CourseReviews courseId={courseId!} />
       </Container>
     </Box>
   );

@@ -1,13 +1,12 @@
 import uuid
 from django.db import models
-
 from users.models import User
-
 
 
 def course_image_path(instance, filename):
     """Generate file path for new course image upload."""
     return f'courses/{instance.id}/{filename}'
+
 
 class Course(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
@@ -16,6 +15,10 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to=course_image_path, null=True, blank=True)
+    duration = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # e.g. 10.5 hours
+    enrolled_count = models.PositiveIntegerField(default=0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    ratings_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -26,10 +29,21 @@ class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
     title = models.CharField(max_length=255)
     content = models.TextField()
-    order_no = models.PositiveIntegerField()
+    order_no = models.IntegerField(default=1)
 
     def __str__(self):
         return f"{self.title} (Course: {self.course.title})"
+
+
+class Lesson(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
+    title = models.CharField(max_length=255)
+    video_url = models.URLField(blank=True, null=True)
+    content = models.TextField(blank=True)
+    order_no = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.title} (Module: {self.module.title})"
 
 
 class UserCourse(models.Model):
@@ -47,3 +61,14 @@ class UserCourse(models.Model):
 
     def __str__(self):
         return f"{self.user.name} -> {self.course.title} ({self.status})"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="reviews")
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} rated {self.course.title} - {self.rating}⭐"

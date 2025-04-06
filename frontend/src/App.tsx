@@ -27,13 +27,13 @@ const App: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/learn" element={<CoursesPage />} />
           <Route path="/interview-prep" element={<InterviewPrepPage />} />
-          <Route path="/courses/:id" element={<CourseDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/instructor-signup" element={<InstructorSignUpPage />} />
           <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-          <Route path="/logout" element={<LogoutPage />} />
+                    <Route path="/logout" element={<LogoutPage />} />
                   </Routes>
       </div>
       <Footer />

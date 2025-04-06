@@ -27,6 +27,8 @@ class UserAdmin(admin.ModelAdmin):
             "classes": ("collapse",),
         }),
     )
+
+    
 from .models import User, UserProfile
 
 class UserProfileInline(admin.StackedInline):

@@ -28,7 +28,6 @@ const CoursesPage: React.FC = () => {
           headers,
         });
 
-        // Expecting response to have { courses: [], enrolled_ids: [] }
         setCourses(res.data.courses || []);
         setEnrolledCourseIds(res.data.enrolled_ids || []);
       } catch (err) {

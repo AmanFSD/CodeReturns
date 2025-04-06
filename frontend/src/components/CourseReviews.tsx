@@ -8,9 +8,7 @@ const CourseReviews: React.FC<{ courseId: string }> = ({ courseId }) => {
   useEffect(() => {
     axios
       .get(`http://localhost:8000/api/courses/${courseId}/reviews/`)
-      .then((response) => {
-        setReviews(response.data);
-      })
+      .then((response) => setReviews(response.data))
       .catch((error) => console.error("Error fetching reviews:", error));
   }, [courseId]);
 
@@ -22,7 +20,7 @@ const CourseReviews: React.FC<{ courseId: string }> = ({ courseId }) => {
 
       {reviews.map((review, index) => (
         <Box key={index} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar sx={{ mr: 2 }}>{review.user.charAt(0)}</Avatar>
+          <Avatar sx={{ mr: 2 }}>{review.user?.charAt(0) || "S"}</Avatar>
           <Box>
             <Typography fontWeight="bold">{review.user}</Typography>
             <Rating value={4} readOnly />
