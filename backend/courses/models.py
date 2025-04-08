@@ -73,3 +73,14 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.name} rated {self.course.title} - {self.rating}⭐"
+    
+
+
+class LessonCompletion(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    completed = models.BooleanField(default=True)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')

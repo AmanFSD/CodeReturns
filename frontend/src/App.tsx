@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import RegisterPage from "./pages/RegisterPage";
@@ -18,6 +17,11 @@ import ChallengePage from "./pages/ChallengePage";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import UploadCoursePage from "./pages/UploadCoursePage";
 import InstructorProfilePage from "./pages/InstructorProfilePage";
+
+import Navbar from "./components/Navbar";
+import MyCoursesPage from "./pages/MyCoursesPage";
+import EnrollmentsPage from "./pages/EnrollmentsPage";
+import StatsPage from "./pages/StatsPage";
 
 const App: React.FC = () => {
   return (
@@ -39,13 +43,15 @@ const App: React.FC = () => {
           <Route path="/instructor-signup" element={<InstructorSignUpPage />} />
           <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
           <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-                    <Route path="/logout" element={<LogoutPage />} />
-                    <Route path="/instructor/profile" element={<InstructorProfilePage />} />
-                    <Route path="/instructor/upload" element={<UploadCoursePage />} />
-{/* <Route path="/instructor/my-courses" element={<MyCoursesPage />} />
-<Route path="/instructor/enrollments" element={<InstructorEnrollments />} />
-<Route path="/instructor/stats" element={<InstructorStats />} /> */}
-                  </Routes>
+          <Route path="/logout" element={<LogoutPage />} />
+          <Route path="/instructor/profile" element={<InstructorProfilePage />} />
+          <Route path="/instructor/upload" element={<UploadCoursePage />} />
+ {/* Instructor Routes */}
+ <Route path="/instructor/my-courses" element={<MyCoursesPage />} />
+  <Route path="/instructor/upload" element={<UploadCoursePage />} />
+  <Route path="/instructor/enrollments" element={<EnrollmentsPage />} />
+  <Route path="/instructor/stats" element={<StatsPage />} />
+        </Routes>
       </div>
       <Footer />
     </div>

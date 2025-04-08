@@ -17,22 +17,25 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:8000/api/login/", formData);
-      auth.login(response.data.token); 
-// After successful login:
-const token = response.data.token;
-localStorage.setItem("token", token);
-const profileResponse = await axios.get(`${API_URL}/api/profile/`, {
-  headers: { Authorization: `Token ${token}` }
-});
-
-const role = profileResponse.data.user.role;
-localStorage.setItem("user_role", role);
-if (role === "mentor") {
-  navigate("/instructor-dashboard");
-} else {
-  navigate("/dashboard");
-}    } catch (error) {
+      const response = await axios.post(`${API_URL}/api/login/`, formData);
+      const token = response.data.token;
+  
+      // Get profile to fetch user role
+      const profileResponse = await axios.get(`${API_URL}/api/profile/`, {
+        headers: { Authorization: `Token ${token}` }
+      });
+  
+      const role = profileResponse.data.user.role;
+  
+      // Save to context and localStorage
+      auth.login(token, role); 
+  
+ 
+  
+      // Redirect to appropriate dashboard
+      navigate(role === "mentor" ? "/instructor-dashboard" : "/dashboard");
+    } catch (error) {
+      console.error(error);
       setError("Invalid email or password.");
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,125 +8,112 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width:900px)');
-  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const [profilePath, setProfilePath] = useState("/profile");
-  const [dashboardPath, setDashboardPath] = useState("/dashboard");
+  const { userRole, isAuthenticated, logout } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.get("http://localhost:8000/api/profile/", {
-        headers: { Authorization: `Token ${token}` }
-      })
-      .then((res) => {
-        const role = res.data.user.role;
-        if (role === "mentor") {
-          setProfilePath("/instructor/profile");
-          setDashboardPath("/instructor-dashboard");
-        } else {
-          setProfilePath("/profile");
-          setDashboardPath("/dashboard");
-        }
-      })
-      .catch(() => {
-        setProfilePath("/profile");
-        setDashboardPath("/dashboard");
-      });
-    }
-  }, []);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleLogoutClick = () => {
+  const handleLogout = () => {
     logout();
+    setMobileOpen(false);
     navigate("/login");
   };
 
-  const menuItems = [
+  const publicMenu = [
     { name: "Home", path: "/" },
     { name: "Learn", path: "/courses" },
     { name: "Interview Prep", path: "/interview-prep" },
-    ...(isAuthenticated
-      ? [
-          { name: "Dashboard", path: dashboardPath },
-          { name: "Profile", path: profilePath },
-          { name: "Logout", path: "/logout", onClick: handleLogoutClick },
-        ]
-      : [
-          { name: "Login", path: "/login" },
-          { name: "Sign Up", path: "/register" },
-        ]),
+    { name: "Login", path: "/login" },
+    { name: "Sign Up", path: "/register" },
   ];
 
+  const studentMenu = [
+    { name: "Home", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Learn", path: "/courses" },
+    { name: "Interview Prep", path: "/interview-prep" },
+    { name: "Profile", path: "/profile" },
+    { name: "Logout", onClick: handleLogout },
+  ];
+
+  const mentorMenu = [
+    { name: "Home", path: "/" },
+    { name: "Dashboard", path: "/instructor/profile" },
+    { name: "My Courses", path: "/instructor/my-courses" },
+    { name: "Upload Course", path: "/instructor/upload" },
+    { name: "Enrollments", path: "/instructor/enrollments" },
+    { name: "Stats", path: "/instructor/stats" },
+    { name: "Logout", onClick: handleLogout },
+  ];
+
+  const menuItems =
+    isAuthenticated && userRole === "mentor"
+      ? mentorMenu
+      : isAuthenticated && userRole === "student"
+      ? studentMenu
+      : publicMenu;
+
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#355E92' }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box component="img" src="/src/assets/logo.png" sx={{ height: 60 }} />
+    <AppBar position="sticky" sx={{ backgroundColor: "#355E92", top: 0, zIndex: 1100 }}>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Box component={Link} to="/" sx={{ display: "flex", alignItems: "center" }}>
+          <Box component="img" src={logo} alt="KJ Code" sx={{ height: 60 }} />
         </Box>
 
-        {!isMobile ? (
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            {menuItems.map((item) => (
-              <span key={item.name}>
-                {item.onClick ? (
-                  <span
-                    style={{ cursor: 'pointer', color: 'white', fontSize: 16 }}
-                    onClick={item.onClick}
-                  >
-                    {item.name}
-                  </span>
-                ) : (
-                  <Link
-                    to={item.path}
-                    style={{ textDecoration: 'none', color: 'white', fontSize: 16 }}
-                  >
-                    {item.name}
-                  </Link>
-                )}
+        {/* Desktop menu */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
+          {menuItems.map((item) =>
+            item.onClick ? (
+              <span
+                key={item.name}
+                onClick={item.onClick}
+                style={{ cursor: "pointer", color: "white" }}
+              >
+                {item.name}
               </span>
-            ))}
-          </Box>
-        ) : (
-          <IconButton color="inherit" onClick={handleDrawerToggle}>
-            <MenuIcon />
-          </IconButton>
-        )}
-
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton color="inherit"><InstagramIcon /></IconButton>
-          <IconButton color="inherit"><FacebookIcon /></IconButton>
-          <IconButton color="inherit"><TwitterIcon /></IconButton>
+            ) : (
+              <Link
+                key={item.name}
+                to={item.path!}
+                style={{ textDecoration: "none", color: "white" }}
+              >
+                {item.name}
+              </Link>
+            )
+          )}
         </Box>
+
+        {/* Mobile menu button */}
+        <IconButton
+          sx={{ display: { md: "none" } }}
+          onClick={() => setMobileOpen(!mobileOpen)}
+          color="inherit"
+        >
+          <MenuIcon />
+        </IconButton>
       </Toolbar>
 
-      <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}>
+      {/* Mobile Drawer */}
+      <Drawer anchor="right" open={mobileOpen} onClose={() => setMobileOpen(false)}>
         <List sx={{ width: 250 }}>
           {menuItems.map((item) => (
             <ListItem
-              button
               key={item.name}
-              component={item.onClick ? 'div' : Link}
-              to={item.onClick ? undefined : item.path}
+              button
+              component={item.path ? Link : "div"}
+              to={item.path}
               onClick={() => {
-                handleDrawerToggle();
-                item.onClick?.();
+                if (item.onClick) {
+                  item.onClick();
+                } else {
+                  setMobileOpen(false);
+                }
               }}
             >
               <ListItemText primary={item.name} />

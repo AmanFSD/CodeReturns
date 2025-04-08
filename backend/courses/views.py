@@ -1,4 +1,5 @@
-from .models import Course, Review, UserCourse
+from courses.utils.progress import update_course_progress 
+from .models import Course, Lesson, LessonCompletion, Review, UserCourse
 from .serializers import CourseSerializer, ReviewSerializer, UserCourseSerializer
 
 from rest_framework.response import Response
@@ -26,6 +27,8 @@ from rest_framework import status
 from .models import UserCourse
 from .models import Course, Review
 from users.models import User
+from django.db.models import Sum
+
 
 class EnrollInCourseView(APIView):
     permission_classes = [IsAuthenticated]
@@ -148,3 +151,76 @@ def create_course(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_lesson_complete(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        LessonCompletion.objects.get_or_create(user=request.user, lesson=lesson, completed=True)
+        
+        update_course_progress(request.user, lesson.module.course)
+
+        return Response({"message": "Lesson marked as completed."})
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found."}, status=404)
+    
+
+
+from rest_framework import generics, permissions
+from .models import Course, UserCourse
+from .serializers import (
+    InstructorCourseSerializer, 
+    InstructorEnrollmentSerializer, 
+    CourseStatsSerializer, 
+    CourseSerializer
+)
+
+# Custom permission for instructors
+class IsInstructor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'mentor'
+
+# Instructor My Courses
+class MyCoursesView(generics.ListAPIView):
+    serializer_class = InstructorCourseSerializer
+    permission_classes = [IsInstructor]
+
+    def get_queryset(self):
+        return Course.objects.filter(created_by=self.request.user)
+
+# Instructor Upload Course
+class UploadCourseView(generics.CreateAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsInstructor]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+# Instructor Enrollments
+class InstructorEnrollmentsView(generics.ListAPIView):
+    serializer_class = InstructorEnrollmentSerializer
+    permission_classes = [IsInstructor]
+
+    def get_queryset(self):
+        return UserCourse.objects.filter(course__created_by=self.request.user).order_by("-enrolled_at")
+
+# Instructor Stats
+
+class InstructorStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        instructor_courses = Course.objects.filter(created_by=request.user)
+        total_courses = instructor_courses.count()
+        total_students = instructor_courses.aggregate(
+            total_students=Sum('enrolled_count')
+        )['total_students'] or 0
+        
+        return Response({
+            'total_courses': total_courses,
+            'total_students': total_students,
+        })

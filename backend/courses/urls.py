@@ -1,6 +1,10 @@
 from django.urls import path
 
 from .views import (
+    InstructorEnrollmentsView,
+    InstructorStatsView,
+    MyCoursesView,
+    UploadCourseView,
     create_course,
     get_courses,
     get_course_detail,
@@ -18,5 +22,9 @@ urlpatterns = [
     path("<uuid:course_id>/enroll/", EnrollInCourseView.as_view(), name="enroll_course"),
     path("enrolled-courses/", get_enrolled_courses, name="get_enrolled_courses"),
     path("create/", create_course, name="create_course"),
+     path("instructor/my-courses/", MyCoursesView.as_view(), name="my-courses"),
+    path("instructor/upload-course/", UploadCourseView.as_view(), name="upload-course"),
+    path("instructor/enrollments/", InstructorEnrollmentsView.as_view(), name="instructor-enrollments"),
+    path("instructor/stats/", InstructorStatsView.as_view(), name="instructor-stats"),
 
 ]

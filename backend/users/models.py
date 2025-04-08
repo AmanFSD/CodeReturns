@@ -55,3 +55,20 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile of {self.user.name}"
+    
+
+class Badge(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.ImageField(upload_to='badges/')
+
+    def __str__(self):
+        return self.title
+
+class UserBadge(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="badges")
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    earned_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} earned {self.badge.title}"
