@@ -1,30 +1,47 @@
+from .models import Challenge
+from .serializers import ChallengeSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import subprocess
 
+
+@api_view(["GET"])
+def get_challenge_detail(request, challenge_id):
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+        serializer = ChallengeSerializer(challenge)
+        return Response(serializer.data)
+    except Challenge.DoesNotExist:
+        return Response({"error": "Challenge not found"}, status=404)
+
 @api_view(['POST'])
 def execute_code(request):
-    """
-    Accepts Python code and executes it using subprocess (with timeout for safety).
-    Only Python is supported in this example.
-    """
     code = request.data.get("code")
     language = request.data.get("language")
 
     if not code or not language:
         return Response({"error": "Code and language are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if language.lower() != "python":
-        return Response({"error": "Only Python code execution is supported."}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        result = subprocess.run(
-            ["python3", "-c", code],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+        if language.lower() == "python":
+            result = subprocess.run(
+                ["python3", "-c", code],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+        elif language.lower() == "javascript":
+            result = subprocess.run(
+                ["node", "-e", code],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+        else:
+            return Response({"error": "Unsupported language."}, status=status.HTTP_400_BAD_REQUEST)
 
         output = result.stdout.strip()
         error = result.stderr.strip()

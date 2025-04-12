@@ -30,7 +30,10 @@ const MyCourses: React.FC = () => {
       .get(`${API_URL}/api/courses/instructor/my-courses/`, {
         headers: { Authorization: `Token ${localStorage.getItem("token")}` },
       })
-      .then((res) => setCourses(res.data));
+      .then((res) => {
+        console.log("Fetched courses:", res.data); 
+        setCourses(res.data);
+      });
   }, []);
 
   return (
@@ -42,12 +45,16 @@ const MyCourses: React.FC = () => {
         {courses.map((course) => (
           <Grid item xs={12} md={6} lg={4} key={course.id}>
             <Card elevation={3}>
-              <CardMedia
-                component="img"
-                height="160"
-                image={course.image || "/default-course.jpg"}
-                alt={course.title}
-              />
+            <CardMedia
+  component="img"
+  height="160"
+  image={
+    course.image
+      ? `${API_URL}${course.image}`
+      : "/default-course.jpg"
+  }
+  alt={course.title}
+/>
               <CardContent>
                 <Typography variant="h6">{course.title}</Typography>
                 <Chip

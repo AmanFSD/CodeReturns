@@ -14,8 +14,10 @@ class ModuleSerializer(serializers.ModelSerializer):
         model = Module
         fields = ["id", "title", "content", "order_no", "lessons"]
 
+
 class CourseSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
+    modules = ModuleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -30,16 +32,9 @@ class CourseSerializer(serializers.ModelSerializer):
             "enrolled_count",
             "average_rating",
             "ratings_count",
+            "modules",  
         ]
         read_only_fields = ["id", "created_at", "enrolled_count", "average_rating", "ratings_count"]
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            validated_data['created_by'] = request.user
-        else:
-            raise serializers.ValidationError("User is not authenticated.")
-        return super().create(validated_data)
 class UserCourseSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
     user = serializers.StringRelatedField()
@@ -56,9 +51,20 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ["user", "rating", "comment", "created_at"]
 
 class InstructorCourseSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
     class Meta:
         model = Course
-        fields = ["id", "title", "description", "created_at", "duration", "enrolled_count", "average_rating"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "created_at",
+            "duration",
+            "image", 
+            "enrolled_count",
+            "average_rating",
+        ]
 
 class InstructorEnrollmentSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='user.name', read_only=True)
