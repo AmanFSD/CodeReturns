@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import UserProfile
+from .models import UserProfile, UserBadge, Badge
 from .serializers import RegisterSerializer, UserSerializer
 from courses.models import UserCourse
 
@@ -19,6 +19,10 @@ def register_user(request):
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+
+        # Create associated profile
+        UserProfile.objects.get_or_create(user=user)
+
         # Create token
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
@@ -40,6 +44,10 @@ def login_user(request):
     if user:
         if not user.is_active:
             return Response({"error": "Your account is pending approval."}, status=403)
+
+        # Ensure profile exists (failsafe)
+        UserProfile.objects.get_or_create(user=user)
+
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "token": token.key,
@@ -55,12 +63,26 @@ def user_profile(request):
     user = request.user
     completed = list(user.enrollments.filter(status='completed').values_list('course__title', flat=True))
     enrolled = list(user.enrollments.values_list('course__title', flat=True))
+
     serialized_user = UserSerializer(user)
+
+    # XP and Badges
+    profile = getattr(user, 'profile', None)
+    xp = profile.xp if profile else 0
+    badges = UserBadge.objects.filter(user=user).select_related('badge')
+
+    badge_data = [{
+        "title": b.badge.title,
+        "icon": b.badge.icon.url if b.badge.icon else None,
+        "earned_at": b.earned_at
+    } for b in badges]
 
     return Response({
         "user": serialized_user.data,
         "completed_courses": completed,
-        "enrolled_courses": enrolled
+        "enrolled_courses": enrolled,
+        "xp": xp,
+        "badges": badge_data
     })
 
 @api_view(["POST"])
@@ -79,3 +101,6 @@ def reset_password(request):
         return Response({"message": "Password updated successfully!"}, status=200)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=404)
+    
+
+

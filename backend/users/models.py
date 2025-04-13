@@ -8,6 +8,7 @@ ROLE_CHOICES = (
     ("mentor", "Mentor"),
 )
 
+# User Manager
 class UserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         if not email:
@@ -15,7 +16,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         role = extra_fields.get("role", "student")
         if role == "mentor":
-            extra_fields["is_active"] = False  # Needs admin approval
+            extra_fields["is_active"] = False  # Mentor approval required
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -26,6 +27,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email=email, name=name, password=password, **extra_fields)
 
+# Custom User Model
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
@@ -45,18 +47,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.name} ({self.role})"
-    
+
+# User Profile with XP
 class UserProfile(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
+    xp = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Profile of {self.user.name}"
-    
 
+    def add_xp(self, amount):
+        """Add XP and auto-save."""
+        self.xp += amount
+        self.save()
+
+# Badge Model
 class Badge(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -65,10 +74,14 @@ class Badge(models.Model):
     def __str__(self):
         return self.title
 
+# Badge awarded to User
 class UserBadge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="badges")
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     earned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "badge")
 
     def __str__(self):
         return f"{self.user.name} earned {self.badge.title}"

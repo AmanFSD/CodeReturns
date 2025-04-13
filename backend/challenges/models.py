@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-
+from django.utils.text import slugify 
 from users.models import User
 from courses.models import Module
 
@@ -14,10 +14,16 @@ class Challenge(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="challenges")
     title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True, null=True) 
     description = models.TextField()
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="easy")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_challenges")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} ({self.difficulty})"
