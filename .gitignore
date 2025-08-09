@@ -5,4 +5,4 @@ db.sqlite3
 
 # Frontend
 node_modules/
-build/
+build/.env
