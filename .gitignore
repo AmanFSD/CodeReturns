@@ -1,5 +1,7 @@
 # Backend
-env/
+backend/.env
+frontend/.env
+
 __pycache__/
 db.sqlite3
 
