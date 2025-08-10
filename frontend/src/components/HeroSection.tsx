@@ -14,7 +14,7 @@ const HeroSection: React.FC = () => {
       }}
     >
       <Typography variant="h4" fontWeight="bold" sx={{ color: "white" }}>
-        CODE WITH Kaz
+        CODE WITH US
       </Typography>
       <Button
         variant="contained"

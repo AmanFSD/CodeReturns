@@ -7,7 +7,7 @@ const HomePage: React.FC = () => (
 
     
     <HomeCard
-      title="CODE WITH Kaz"
+      title="CODE WITH US"
       buttonText="Join"
       image="/src/assets/images/image1.jpg"
       reversed={false}

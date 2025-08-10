@@ -13,44 +13,36 @@ import PauseCircleOutlineIcon from "@mui/icons-material/PauseCircleOutline";
 
 const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
   const modules = course.modules || [];
-  const defaultLesson = modules[0]?.lessons?.[0];
-  const [selectedLesson, setSelectedLesson] = useState<any>(defaultLesson);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    if (modules.length && modules[0].lessons?.length) {
-      setSelectedLesson(modules[0].lessons[0]);
+    if (modules.length > 0) {
+      const firstSection = modules[0];
+      const firstLesson = firstSection.lessons?.[0] ?? null;
+      setSelectedLesson(firstLesson);
     }
-  }, [course]);
+  }, [modules]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    videoEl.addEventListener("play", onPlay);
+    videoEl.addEventListener("pause", onPause);
 
     return () => {
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
+      videoEl.removeEventListener("play", onPlay);
+      videoEl.removeEventListener("pause", onPause);
     };
   }, [selectedLesson]);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", lg: "row" },
-        gap: 3,
-        my: 4,
-        height: "90vh",
-      }}
-    >
-      {/* LEFT: Video Section */}
+    <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, gap: 3, my: 4, height: "90vh" }}>
+      {/* Video Display */}
       <Box sx={{ flex: 2 }}>
         <Paper sx={{ height: "100%", borderRadius: "5px", overflow: "hidden" }}>
           {selectedLesson?.video_url ? (
@@ -64,7 +56,7 @@ const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 style={{ border: "none" }}
-              ></iframe>
+              />
             ) : (
               <video ref={videoRef} width="100%" height="100%" controls>
                 <source src={selectedLesson.video_url} type="video/mp4" />
@@ -72,12 +64,12 @@ const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
               </video>
             )
           ) : (
-            <Typography p={2}>No video selected</Typography>
+            <Typography p={2}>No video available</Typography>
           )}
         </Paper>
       </Box>
 
-      {/* RIGHT: Module + Lessons List */}
+      {/* Module & Lesson List */}
       <Box sx={{ flex: 1, overflowY: "auto", maxHeight: "90vh", px: 2 }}>
         <Typography variant="h5" fontWeight="bold" mb={2}>
           📚 Course Modules
@@ -85,12 +77,8 @@ const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
 
         {modules.map((mod: any, i: number) => (
           <Box key={i}>
-            <Typography
-              variant="subtitle1"
-              fontWeight="bold"
-              sx={{ mt: 2, color: "#355E92" }}
-            >
-              Section {mod.order_no ?? i + 1}: {mod.title ?? "Untitled"}
+            <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 2, color: "#355E92" }}>
+              Section {mod.order_no ?? i + 1}: {mod.title}
             </Typography>
             <Divider sx={{ my: 1 }} />
             <List disablePadding>
@@ -100,8 +88,7 @@ const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
                   button
                   onClick={() => setSelectedLesson(lesson)}
                   sx={{
-                    bgcolor:
-                      selectedLesson?.id === lesson.id ? "#f0f0f0" : "inherit",
+                    bgcolor: selectedLesson?.id === lesson.id ? "#f0f0f0" : "inherit",
                     borderRadius: 1,
                     mb: 1,
                   }}
@@ -114,21 +101,15 @@ const CourseVideoSection: React.FC<{ course: any }> = ({ course }) => {
                   <ListItemText
                     primary={
                       <>
-                        {lesson.title ?? "Untitled Lesson"}{" "}
+                        {lesson.title}{' '}
                         {lesson.duration && (
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            sx={{ ml: 1, color: "#888" }}
-                          >
+                          <Typography component="span" variant="body2" sx={{ ml: 1, color: "#888" }}>
                             ({lesson.duration})
                           </Typography>
                         )}
                       </>
                     }
-                    secondary={
-                      lesson.content?.slice(0, 50) ?? "No description available"
-                    }
+                    secondary={lesson.content?.slice(0, 50) || "No description available"}
                   />
                 </ListItem>
               ))}

@@ -6,7 +6,7 @@ const Banner: React.FC = () => {
   return (
     <Box sx={{ textAlign: 'center', py: 5, backgroundColor: '#e0e0e0' }}>
       <Typography variant="h3" gutterBottom>
-        CODE WITH Kaz
+        CODE WITH US
       </Typography>
       <Button variant="contained">Join</Button>
     </Box>

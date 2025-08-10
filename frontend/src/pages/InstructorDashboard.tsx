@@ -1,5 +1,4 @@
 
-// src/pages/InstructorDashboard.tsx
 import React from "react";
 import { Box, Typography, Grid, Paper, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";

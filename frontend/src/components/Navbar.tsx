@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
         {/* Desktop menu */}
         <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
           {menuItems.map((item) =>
-            item.onClick ? (
+            "onClick" in item && item.onClick ? (
               <span
                 key={item.name}
                 onClick={item.onClick}

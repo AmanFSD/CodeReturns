@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
         marginTop: "auto",
       }}
     >
-      <Typography>ALL RIGHTS RESERVED BY KAZ CODE</Typography>
+      <Typography>ALL RIGHTS RESERVED BY CODE RETURNS</Typography>
     </Box>
   );
 };
