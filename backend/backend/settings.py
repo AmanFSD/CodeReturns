@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'challenges',
     'interviews',
     'subscriptions',
+    'predictions',
+
 ]
 
 MIDDLEWARE = [
