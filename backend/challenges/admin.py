@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Challenge, Submission
+from .models import Challenge, Company, Submission
 
 @admin.register(Challenge)
 class ChallengeAdmin(admin.ModelAdmin):
-    list_display = ("title", "module", "difficulty", "created_by", "created_at")
+    list_display = ("id","title", "module", "difficulty", "created_by", "created_at",)
     list_filter = ("difficulty", "created_at", "module")
     search_fields = ("title", "description", "module__title")
     ordering = ("created_at",)
@@ -16,4 +16,11 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_filter = ("result", "submitted_at")
     search_fields = ("user__name", "challenge__title", "code")
     ordering = ("submitted_at",)
+    list_per_page = 25
+
+
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    search_fields = ("name",)
     list_per_page = 25
