@@ -6,9 +6,9 @@ from .models import User
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-admin.site.site_header = "KazCode"  # Header displayed on the login page and at the top of the admin panel
+admin.site.site_header = "CodeReturns"  # Header displayed on the login page and at the top of the admin panel
 admin.site.site_title = "Aman"  # Browser title
-admin.site.index_title = "Welcome to KazCode Admin Panel"  # Dashboard title
+admin.site.index_title = "Welcome to CodeReturns Admin Panel"  # Dashboard title
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "role", "is_active")
